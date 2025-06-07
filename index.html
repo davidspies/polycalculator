@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polynomial Calculator</title>
+
+    <base href="/polycalculator/" />
+
     
 <script type="module">
 import init, * as bindings from '/polycalculator/polycalculator-945c6935dd0c92a6.js';
@@ -146,6 +149,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
         <div class="history-container">
             <h2>History</h2>
             <div id="history-list">
+                <!-- History entries will be inserted here by Rust -->
             </div>
         </div>
     </div>
