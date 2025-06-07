@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Calculator</title>
+    
+<script type="module">
+import init, * as bindings from '/polycalculator/polycalculator-945c6935dd0c92a6.js';
+const wasm = await init({ module_or_path: '/polycalculator/polycalculator-945c6935dd0c92a6_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: #e2e8f0;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            /* Align to top */
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            /* Allow wrapping on smaller screens */
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: center;
+        }
+
+        .calculator-container {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            flex: 1;
+            /* Take up available space */
+            min-width: 350px;
+            /* Minimum width for the calculator */
+            max-width: 600px;
+        }
+
+        .history-container {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            /* Take up available space */
+            min-width: 350px;
+            /* Minimum width for history */
+            max-width: 500px;
+        }
+
+        textarea {
+            font-size: 1.2rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #718096;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 120px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        button {
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            margin-top: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #718096;
+            background-color: #38a169;
+            color: #e2e8f0;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #48bb78;
+        }
+
+        #result-output {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #1a202c;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 1.5rem;
+            min-height: 2.5rem;
+            word-wrap: break-word;
+            text-align: left;
+        }
+
+        .history-entry {
+            background-color: #4a5568;
+            border-left: 4px solid #63b3ed;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            word-wrap: break-word;
+        }
+
+        .history-query {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            white-space: pre-wrap;
+            /* Wrap long queries */
+        }
+
+        .history-result {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+    </style>
+<link rel="modulepreload" href="/polycalculator/polycalculator-945c6935dd0c92a6.js" crossorigin="anonymous" integrity="sha384-PZUB1mmNaRi13i+sWlsH+drJWyVnvQq3fd7HxqhyUTzAheAq5bNBTIH+dqzdnzaF"><link rel="preload" href="/polycalculator/polycalculator-945c6935dd0c92a6_bg.wasm" crossorigin="anonymous" integrity="sha384-hhOS80+wOX8Y3GHCn9iXIsme04m9x2f1aRiW+oi/thAUqO030/TCJyMLHd4Fyq2V" as="fetch" type="application/wasm"></head>
+
+<body>
+    <div class="main-container">
+        <div class="calculator-container">
+            <h1>Polynomial Calculator</h1>
+            <textarea id="expression-input" placeholder="Enter a polynomial, e.g., C(x, 2) + 5!"></textarea>
+            <button id="calculate-button">Calculate</button>
+            <h2>Result:</h2>
+            <div id="result-output">0</div>
+        </div>
+        <div class="history-container">
+            <h2>History</h2>
+            <div id="history-list">
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
