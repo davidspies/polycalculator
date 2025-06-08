@@ -7,10 +7,11 @@ use web_sys::{Element, HtmlInputElement, HtmlSelectElement, HtmlTextAreaElement,
 use num_rational::BigRational;
 use num_traits::Zero;
 
-use crate::format::{format_poly, Basis};
+use crate::basis::Basis;
 use crate::parse::parse_expr;
 use crate::polynomial::Polynomial;
 
+mod basis;
 mod format;
 mod parse;
 mod pascal;
@@ -49,7 +50,7 @@ fn update_history_display(
         result_div.set_class_name("history-result");
         // Re-parse the original query to format it in the current basis
         if let Ok((poly, _)) = parse_expr(&entry.query) {
-            result_div.set_text_content(Some(&format_poly(&poly, basis)));
+            result_div.set_text_content(Some(&basis.format(&poly)));
         } else {
             result_div.set_text_content(Some(&entry.result)); // Show original result if it was an error
         }
@@ -62,7 +63,7 @@ fn update_history_display(
 
 fn rerender_result(app_state: &AppState, result_output: &Element, history_list_element: &Element) {
     if let Some(poly) = &app_state.current_poly {
-        result_output.set_text_content(Some(&format_poly(poly, app_state.basis)));
+        result_output.set_text_content(Some(&app_state.basis.format(poly)));
     }
     update_history_display(&app_state.history, history_list_element, app_state.basis);
 }
@@ -93,7 +94,7 @@ fn perform_calculation(
                 )
             } else {
                 let p_clone = poly.clone();
-                (format_poly(&p_clone, app_state.basis), Some(poly))
+                (app_state.basis.format(&p_clone), Some(poly))
             }
         }
         Err(e) => (format!("Error: {}", e), None),

@@ -1,10 +1,10 @@
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use num_traits::{One, ToPrimitive, Zero};
+use num_traits::{ToPrimitive, Zero};
 
 use crate::{
     pascal::{choose, factorial, pick},
-    polynomial::Polynomial,
+    polynomial::{x, Polynomial},
 };
 
 // --- Recursive Descent Parser ---
@@ -144,7 +144,7 @@ fn parse_primary(input: &str) -> ParseResult<Polynomial> {
         if after_ident.trim_start().starts_with('(') {
             parse_function_call(ident, after_ident.trim_start())
         } else if ident == "x" {
-            Ok((Polynomial::new_term(BigRational::one(), 1), after_ident))
+            Ok((x(), after_ident))
         } else {
             Err(format!(
                 "Unexpected identifier '{}' without function call",

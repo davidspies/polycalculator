@@ -1,21 +1,17 @@
 use std::borrow::Cow;
+use std::fmt;
 use std::ops::{Add, DivAssign, Mul, MulAssign, Sub};
-use std::{fmt, slice};
 
 use num_rational::BigRational;
-use num_traits::{One, Signed, Zero};
+use num_traits::{One, Zero};
+
+use crate::format::format_from_coeffs;
 
 // --- Polynomial Struct and Operations ---
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Polynomial(Vec<BigRational>);
 
 impl Polynomial {
-    pub(crate) fn new_term(coeff: BigRational, power: usize) -> Self {
-        let mut coeffs = vec![BigRational::zero(); power + 1];
-        coeffs[power] = coeff;
-        Polynomial(coeffs)
-    }
-
     pub(crate) fn constant(val: BigRational) -> Self {
         Polynomial(vec![val])
     }
@@ -53,7 +49,7 @@ impl Polynomial {
     }
 
     pub(crate) fn is_zero(&self) -> bool {
-        self.coeffs().all(|c| c.is_zero())
+        self.coeffs().iter().all(|c| c.is_zero())
     }
 
     pub(crate) fn degree(&self) -> usize {
@@ -64,8 +60,8 @@ impl Polynomial {
         self.0.get(n).cloned().unwrap_or_else(BigRational::zero)
     }
 
-    pub(crate) fn coeffs(&self) -> slice::Iter<BigRational> {
-        self.0.iter()
+    pub(crate) fn coeffs(&self) -> &[BigRational] {
+        &self.0
     }
 
     pub(crate) fn extract_constant(&self) -> Option<Cow<BigRational>> {
@@ -75,6 +71,10 @@ impl Polynomial {
             _ => None,
         }
     }
+}
+
+pub(crate) fn x() -> Polynomial {
+    Polynomial(vec![BigRational::zero(), BigRational::one()])
 }
 
 // --- Operator Overloading ---
@@ -156,47 +156,6 @@ impl DivAssign<&BigRational> for Polynomial {
 // --- Display Formatting ---
 impl fmt::Display for Polynomial {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.is_zero() {
-            return write!(f, "0");
-        }
-        let mut terms = Vec::new();
-        for (i, coeff) in self.coeffs().enumerate().rev() {
-            if coeff.is_zero() {
-                continue;
-            }
-            let sign = if terms.is_empty() {
-                if coeff.is_negative() {
-                    "-"
-                } else {
-                    ""
-                }
-            } else if coeff.is_negative() {
-                " - "
-            } else {
-                " + "
-            };
-            let abs_coeff = coeff.abs();
-            let coeff_str = if abs_coeff.is_one() && i > 0 {
-                "".to_string()
-            } else if abs_coeff.is_integer() {
-                format!("{}", abs_coeff)
-            } else {
-                format!("({})", abs_coeff)
-            };
-            let var_str = match i {
-                0 => "",
-                1 => "x",
-                _ => &format!("x^{}", i),
-            };
-            let term = if i > 0 && coeff_str.is_empty() {
-                format!("{}{}", sign, var_str)
-            } else if i > 0 && !coeff_str.is_empty() {
-                format!("{}{}{}", sign, coeff_str, var_str)
-            } else {
-                format!("{}{}", sign, coeff_str)
-            };
-            terms.push(term);
-        }
-        write!(f, "{}", terms.join(""))
+        format_from_coeffs(self.coeffs(), |degree| format!("x^{}", degree)).fmt(f)
     }
 }
