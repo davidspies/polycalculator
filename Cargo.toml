@@ -1,0 +1,28 @@
+[package]
+name = "polycalculator"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+console_error_panic_hook = "*"
+meval = "*"
+num-bigint = "*"
+num-rational = "*"
+num-traits = "*"
+wasm-bindgen = "*"
+
+# web-sys is needed for DOM manipulation
+[dependencies.web-sys]
+version = "*"
+features = [
+    'Document',
+    'Element',
+    'HtmlInputElement',
+    'HtmlSelectElement',
+    'HtmlTextAreaElement',
+    'KeyboardEvent',
+    'Window',
+]
