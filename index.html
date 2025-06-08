@@ -5,13 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polynomial Calculator</title>
-
     <base href="/polycalculator/" />
-
     
 <script type="module">
-import init, * as bindings from '/polycalculator/polycalculator-945c6935dd0c92a6.js';
-const wasm = await init({ module_or_path: '/polycalculator/polycalculator-945c6935dd0c92a6_bg.wasm' });
+import init, * as bindings from '/polycalculator/polycalculator-7e5b5dd89dcc6ea1.js';
+const wasm = await init({ module_or_path: '/polycalculator/polycalculator-7e5b5dd89dcc6ea1_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -28,7 +26,6 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            /* Align to top */
             min-height: 100vh;
             margin: 0;
             padding: 2rem;
@@ -37,7 +34,6 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
         .main-container {
             display: flex;
             flex-wrap: wrap;
-            /* Allow wrapping on smaller screens */
             gap: 2rem;
             width: 100%;
             max-width: 1200px;
@@ -51,10 +47,10 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             text-align: center;
             flex: 1;
-            /* Take up available space */
             min-width: 350px;
-            /* Minimum width for the calculator */
             max-width: 600px;
+            display: flex;
+            flex-direction: column;
         }
 
         .history-container {
@@ -63,9 +59,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             flex: 1;
-            /* Take up available space */
             min-width: 350px;
-            /* Minimum width for history */
             max-width: 500px;
         }
 
@@ -111,6 +105,30 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             text-align: left;
         }
 
+        .evaluation-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #4a5568;
+        }
+
+        .evaluation-section input {
+            font-size: 1.1rem;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #718096;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            font-family: monospace;
+            width: 50%;
+        }
+
+        #eval-result {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-height: 2rem;
+        }
+
         .history-entry {
             background-color: #4a5568;
             border-left: 4px solid #63b3ed;
@@ -126,7 +144,6 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             font-size: 0.9rem;
             margin-bottom: 0.5rem;
             white-space: pre-wrap;
-            /* Wrap long queries */
         }
 
         .history-result {
@@ -135,7 +152,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             font-weight: bold;
         }
     </style>
-<link rel="modulepreload" href="/polycalculator/polycalculator-945c6935dd0c92a6.js" crossorigin="anonymous" integrity="sha384-PZUB1mmNaRi13i+sWlsH+drJWyVnvQq3fd7HxqhyUTzAheAq5bNBTIH+dqzdnzaF"><link rel="preload" href="/polycalculator/polycalculator-945c6935dd0c92a6_bg.wasm" crossorigin="anonymous" integrity="sha384-hhOS80+wOX8Y3GHCn9iXIsme04m9x2f1aRiW+oi/thAUqO030/TCJyMLHd4Fyq2V" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="/polycalculator/polycalculator-7e5b5dd89dcc6ea1.js" crossorigin="anonymous" integrity="sha384-Kv9oaGuwymKaw2H6GJCB3x5jn0GGU/8c5S6yb4YtQl/ksSfy080o3Y/MbPX/8APo"><link rel="preload" href="/polycalculator/polycalculator-7e5b5dd89dcc6ea1_bg.wasm" crossorigin="anonymous" integrity="sha384-Xt5wT0DuKxq6HdPeRAn7E4lmgt/upQ9ILAlWHqjbaKK5AQFJY+Yv1lxZkfJzBACU" as="fetch" type="application/wasm"></head>
 
 <body>
     <div class="main-container">
@@ -145,6 +162,14 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             <button id="calculate-button">Calculate</button>
             <h2>Result:</h2>
             <div id="result-output">0</div>
+
+            <!-- New Evaluation Section -->
+            <div class="evaluation-section">
+                <h2>Evaluate at x =</h2>
+                <input type="text" id="eval-input" placeholder="e.g., 5 or 3/4" />
+                <button id="eval-button">Evaluate</button>
+                <div id="eval-result"></div>
+            </div>
         </div>
         <div class="history-container">
             <h2>History</h2>
