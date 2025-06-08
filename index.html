@@ -8,42 +8,88 @@
     <base href="/" data-trunk-public-url />
     <link data-trunk rel="rust" />
     <style>
-        body {
-            background-color: #1a202c;
-            color: #e2e8f0;
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 2rem;
+        :root {
+            --bg-color: #1a202c;
+            --container-bg: #2d3748;
+            --interactive-bg: #4a5568;
+            --text-color: #e2e8f0;
+            --header-color: #ffffff;
+            --accent-color: #63b3ed;
+            --button-color: #38a169;
+            --button-hover: #48bb78;
         }
 
-        .main-container {
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid var(--interactive-bg);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .tab-button:hover {
+            background-color: var(--interactive-bg);
+        }
+
+        .tab-button.active {
+            color: var(--header-color);
+            border-bottom-color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Common styles for containers inside tabs */
+        .tool-container {
             display: flex;
             flex-wrap: wrap;
             gap: 2rem;
             width: 100%;
-            max-width: 1200px;
             justify-content: center;
         }
 
-        .calculator-container {
-            background-color: #2d3748;
+        .main-panel {
+            background-color: var(--container-bg);
             padding: 2rem;
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            flex: 1;
-            min-width: 350px;
+            flex: 2;
+            min-width: 400px;
             max-width: 600px;
             display: flex;
             flex-direction: column;
         }
 
-        .history-container {
-            background-color: #2d3748;
+        .side-panel {
+            background-color: var(--container-bg);
             padding: 2rem;
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -52,40 +98,52 @@
             max-width: 500px;
         }
 
-        textarea {
-            font-size: 1.2rem;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            border-radius: 0.25rem;
-            border: 1px solid #718096;
-            background-color: #1a202c;
-            color: #e2e8f0;
+        h1,
+        h2 {
+            color: var(--header-color);
+            border-bottom: 1px solid var(--interactive-bg);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        /* Calculator styles */
+        #expression-input {
             width: 100%;
             box-sizing: border-box;
             min-height: 120px;
             resize: vertical;
+            font-size: 1.2rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--interactive-bg);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: monospace;
         }
 
-        button {
+        #calculate-button,
+        #eval-button {
             font-size: 1.2rem;
             padding: 0.5rem 1rem;
             margin-top: 0.5rem;
             border-radius: 0.25rem;
-            border: 1px solid #718096;
-            background-color: #38a169;
-            color: #e2e8f0;
+            border: none;
+            background-color: var(--button-color);
+            color: var(--text-color);
             cursor: pointer;
         }
 
-        button:hover {
-            background-color: #48bb78;
+        #calculate-button:hover,
+        #eval-button:hover {
+            background-color: var(--button-hover);
         }
 
-        #result-output {
+        #result-output,
+        #eval-result {
             margin-top: 1rem;
             padding: 1rem;
-            background-color: #1a202c;
+            background-color: var(--bg-color);
             border-radius: 0.25rem;
             font-family: monospace;
             font-size: 1.5rem;
@@ -103,40 +161,37 @@
         }
 
         #basis-selector {
-            background: #4a5568;
+            background: var(--interactive-bg);
             color: white;
             padding: 5px;
-            border: 1px solid #718096;
+            border: 1px solid var(--interactive-bg);
             border-radius: 0.25rem;
         }
 
         .evaluation-section {
             margin-top: 1.5rem;
             padding-top: 1.5rem;
-            border-top: 1px solid #4a5568;
+            border-top: 1px solid var(--interactive-bg);
         }
 
         .evaluation-section input {
             font-size: 1.1rem;
             padding: 0.5rem;
             border-radius: 0.25rem;
-            border: 1px solid #718096;
-            background-color: #1a202c;
-            color: #e2e8f0;
+            border: 1px solid var(--interactive-bg);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: monospace;
             width: 50%;
         }
 
         #eval-result {
-            margin-top: 1rem;
-            font-size: 1.5rem;
             font-weight: bold;
-            min-height: 2rem;
         }
 
         .history-entry {
-            background-color: #4a5568;
-            border-left: 4px solid #63b3ed;
+            background-color: var(--interactive-bg);
+            border-left: 4px solid var(--accent-color);
             padding: 0.75rem;
             margin-bottom: 1rem;
             border-radius: 0.25rem;
@@ -152,43 +207,106 @@
         }
 
         .history-result {
-            color: #ffffff;
+            color: var(--header-color);
             font-size: 1.1rem;
             font-weight: bold;
+        }
+
+        /* Pascal's Triangle Styles */
+        #pascal-triangle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: monospace;
+            line-height: 1.8;
+            overflow-x: auto;
+            padding: 1rem;
+        }
+
+        .pascal-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .pascal-cell {
+            padding: 0 0.75em;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .pascal-cell:hover {
+            background-color: var(--interactive-bg);
+        }
+
+        .pascal-cell.highlighted {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            font-weight: bold;
+        }
+
+        #highlight-sum-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 1rem;
         }
     </style>
 </head>
 
 <body>
-    <div class="main-container">
-        <div class="calculator-container">
-            <h1>Polynomial Calculator</h1>
-            <textarea id="expression-input" placeholder="Enter a polynomial, e.g., C(x, 2) + 5!"></textarea>
-            <button id="calculate-button">Calculate</button>
-            <h2>Result:</h2>
-            <div id="result-output">0</div>
+    <div class="app-container">
+        <nav class="tab-nav">
+            <button id="calculator-tab-btn" class="tab-button active">Polynomial Calculator</button>
+            <button id="pascal-tab-btn" class="tab-button">Pascal's Triangle</button>
+        </nav>
 
-            <!-- New Basis Selector -->
-            <div class="basis-selector-section">
-                <label for="basis-selector">Output Basis:</label>
-                <select id="basis-selector">
-                    <option value="standard" selected>Standard (x^k)</option>
-                    <option value="binomial">Binomial C(x,k)</option>
-                </select>
-            </div>
-
-            <!-- Evaluation Section -->
-            <div class="evaluation-section">
-                <h2>Evaluate at x =</h2>
-                <input type="text" id="eval-input" placeholder="e.g., 5 or 3/4" />
-                <button id="eval-button">Evaluate</button>
-                <div id="eval-result"></div>
+        <!-- Tab 1: Polynomial Calculator -->
+        <div id="calculator-tab" class="tab-content active">
+            <div class="tool-container">
+                <div class="main-panel">
+                    <h1>Polynomial Calculator</h1>
+                    <textarea id="expression-input" placeholder="Enter a polynomial, e.g., C(x, 2) + 5!"></textarea>
+                    <button id="calculate-button">Calculate (Ctrl+Enter)</button>
+                    <h2>Result:</h2>
+                    <div id="result-output">0</div>
+                    <div class="basis-selector-section">
+                        <label for="basis-selector">Output Basis:</label>
+                        <select id="basis-selector">
+                            <option value="standard" selected>Standard (x^k)</option>
+                            <option value="binomial">Binomial C(x,k)</option>
+                        </select>
+                    </div>
+                    <div class="evaluation-section">
+                        <h2>Evaluate at x =</h2>
+                        <input type="text" id="eval-input" placeholder="e.g., 5 or 3/4" />
+                        <button id="eval-button">Evaluate</button>
+                        <div id="eval-result"></div>
+                    </div>
+                </div>
+                <div class="side-panel">
+                    <h2>History</h2>
+                    <div id="history-list"></div>
+                </div>
             </div>
         </div>
-        <div class="history-container">
-            <h2>History</h2>
-            <div id="history-list">
-                <!-- History entries will be inserted here by Rust -->
+
+        <!-- Tab 2: Pascal's Triangle Explorer -->
+        <div id="pascal-tab" class="tab-content">
+            <div class="tool-container">
+                <div class="main-panel">
+                    <h1>Pascal's Triangle</h1>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <label for="pascal-rows-input">Number of Rows:</label>
+                        <input type="number" id="pascal-rows-input" min="1" max="30" value="7"
+                            style="width: 80px; padding: 0.5rem; background-color: var(--bg-color); border: 1px solid var(--interactive-bg); color: var(--text-color);" />
+                    </div>
+                    <div id="pascal-triangle-container"></div>
+                </div>
+                <div class="side-panel">
+                    <h2>Sum of Highlighted</h2>
+                    <div id="highlight-sum-display">0</div>
+                </div>
             </div>
         </div>
     </div>

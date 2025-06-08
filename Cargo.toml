@@ -18,8 +18,13 @@ wasm-bindgen = "*"
 [dependencies.web-sys]
 version = "*"
 features = [
+    'CssStyleDeclaration',
     'Document',
+    'DomStringMap',
+    'DomTokenList',
     'Element',
+    'HtmlCollection',
+    'HtmlElement',
     'HtmlInputElement',
     'HtmlSelectElement',
     'HtmlTextAreaElement',
