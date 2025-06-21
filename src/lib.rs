@@ -11,16 +11,16 @@ use web_sys::{
     KeyboardEvent,
 };
 
-use crate::basis::Basis;
-use crate::parse::parse_expr;
-use crate::pascal::generate_pascal_triangle;
-use crate::polynomial::Polynomial;
-
 mod basis;
 mod format;
 mod parse;
 mod pascal;
 mod polynomial;
+
+use crate::basis::Basis;
+use crate::parse::parse;
+use crate::pascal::generate_pascal_triangle;
+use crate::polynomial::Polynomial;
 
 struct HistoryEntry {
     query: String,
@@ -57,7 +57,7 @@ fn update_history_display(
         let result_div = document.create_element("div").unwrap();
         result_div.set_class_name("history-result");
         // Re-parse the original query to format it in the current basis
-        if let Ok((poly, _)) = parse_expr(&entry.query) {
+        if let Ok(poly) = parse(&entry.query) {
             result_div.set_text_content(Some(&basis.format(&poly)));
         } else {
             result_div.set_text_content(Some(&entry.result)); // Show original result if it was an error
@@ -90,21 +90,8 @@ fn perform_calculation(
         return;
     }
 
-    let (result_text, new_poly) = match parse_expr(&expression_str) {
-        Ok((poly, remaining)) => {
-            if !remaining.trim().is_empty() {
-                (
-                    format!(
-                        "Error: Could not parse entire expression. Unparsed remainder: '{}'",
-                        remaining
-                    ),
-                    None,
-                )
-            } else {
-                let p_clone = poly.clone();
-                (app_state.basis.format(&p_clone), Some(poly))
-            }
-        }
+    let (result_text, new_poly) = match parse(&expression_str) {
+        Ok(poly) => (app_state.basis.format(&poly), Some(poly)),
         Err(e) => (format!("Error: {}", e), None),
     };
 
