@@ -1,11 +1,17 @@
+use std::cell::LazyCell;
+
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use num_traits::{ToPrimitive, Zero};
+use num_traits::Zero;
 
 use crate::{
     pascal::{choose, factorial, pick},
     polynomial::{x, Polynomial},
 };
+
+mod poly_to_usize;
+
+use self::poly_to_usize::poly_to_usize;
 
 // --- Recursive Descent Parser ---
 type ParseResult<'a, T> = Result<(T, &'a str), String>;
@@ -16,11 +22,11 @@ pub(crate) fn parse_expr(input: &str) -> ParseResult<Polynomial> {
         let trimmed = remaining.trim_start();
         if trimmed.starts_with('+') {
             let (rhs, next_remaining) = parse_term(&trimmed[1..])?;
-            poly = poly + rhs;
+            poly += rhs;
             remaining = next_remaining;
         } else if trimmed.starts_with('-') {
             let (rhs, next_remaining) = parse_term(&trimmed[1..])?;
-            poly = poly - rhs;
+            poly -= rhs;
             remaining = next_remaining;
         } else {
             break;
@@ -40,7 +46,11 @@ fn parse_term(input: &str) -> ParseResult<Polynomial> {
         } else if trimmed.starts_with('/') {
             let (rhs, next_remaining) = parse_factor(&trimmed[1..])?;
             let Some(divisor) = rhs.extract_constant() else {
-                return Err(format!("Division must be by a constant number, not a polynomial containing 'x'. Problem term: {}", rhs));
+                return Err(format!(
+                    "Division must be by a constant number, not a polynomial \
+                    containing 'x'. Problem term: {}",
+                    rhs
+                ));
             };
             if divisor.is_zero() {
                 return Err("Division by zero is not allowed.".to_string());
@@ -80,13 +90,7 @@ fn parse_power(input: &str) -> ParseResult<Polynomial> {
         let trimmed = remaining.trim_start();
         if trimmed.starts_with('^') {
             let (exponent, next_remaining) = parse_postfix(&trimmed[1..])?;
-            let Some(exp_val) = exponent.extract_constant() else {
-                return Err("Exponent must be an integer constant.".to_string());
-            };
-            if !exp_val.is_integer() {
-                return Err("Exponent must be an integer constant.".to_string());
-            }
-            let exp_val = exp_val.to_i32().unwrap() as u32;
+            let exp_val = poly_to_usize(&exponent, "Exponent")?;
             base = base.pow(exp_val);
             remaining = next_remaining;
         } else {
@@ -101,23 +105,8 @@ fn parse_postfix(input: &str) -> ParseResult<Polynomial> {
     loop {
         let trimmed = remaining.trim_start();
         if trimmed.starts_with('!') {
-            let Some(n_rational) = poly.extract_constant() else {
-                return Err(format!("Operand for ! must be a constant, got {}", poly));
-            };
-            if !n_rational.is_integer() {
-                return Err(format!(
-                    "Operand for ! must be an integer, got {}",
-                    n_rational
-                ));
-            }
-            let n_bigint = n_rational.numer();
-            if *n_bigint < BigInt::zero() {
-                return Err(format!(
-                    "Operand for ! must be non-negative, got {}",
-                    n_bigint
-                ));
-            }
-            poly = Polynomial::constant(factorial(n_bigint).into());
+            let n = poly_to_usize(&poly, "Operand for !")?;
+            poly = Polynomial::constant(factorial(n).into());
             remaining = &trimmed[1..];
         } else {
             break;
@@ -177,74 +166,30 @@ fn parse_function_call<'a>(ident: &'a str, input: &'a str) -> ParseResult<'a, Po
     remaining = &remaining[1..];
 
     match ident {
-        "P" => {
-            if args.len() != 2 {
-                return Err(format!(
-                    "Permutation function P takes 2 arguments, got {}",
-                    args.len()
-                ));
-            }
-            let poly_arg = args[0].clone();
-            let k_arg = &args[1];
-            let Some(k_rational) = k_arg.extract_constant() else {
-                return Err(format!(
-                    "Second argument to P must be a constant, got {}",
-                    k_arg
-                ));
-            };
-            if !k_rational.is_integer() {
-                return Err(format!(
-                    "Second argument to P must be an integer, got {}",
-                    k_rational
-                ));
-            }
-            let k_bigint = k_rational.numer();
-            if *k_bigint < BigInt::zero() {
-                return Err(format!(
-                    "Second argument to P must be non-negative, got {}",
-                    k_bigint
-                ));
-            }
-            let k = k_bigint
-                .to_u32()
-                .ok_or_else(|| "Second argument to P is too large".to_string())?;
-            Ok((pick(poly_arg, k), remaining))
-        }
-        "C" => {
-            if args.len() != 2 {
-                return Err(format!(
-                    "Combination function C takes 2 arguments, got {}",
-                    args.len()
-                ));
-            }
-            let poly_arg = args[0].clone();
-            let k_arg = &args[1];
-            let Some(k_rational) = k_arg.extract_constant() else {
-                return Err(format!(
-                    "Second argument to C must be a constant, got {}",
-                    k_arg
-                ));
-            };
-            if !k_rational.is_integer() {
-                return Err(format!(
-                    "Second argument to C must be an integer, got {}",
-                    k_rational
-                ));
-            }
-            let k_bigint = k_rational.numer();
-            if *k_bigint < BigInt::zero() {
-                return Err(format!(
-                    "Second argument to C must be non-negative, got {}",
-                    k_bigint
-                ));
-            }
-            let k = k_bigint
-                .to_u32()
-                .ok_or_else(|| "Second argument to C is too large".to_string())?;
-            Ok((choose(poly_arg, k), remaining))
-        }
+        "P" => parse_pascal_call(&args, remaining, 'P', pick),
+        "C" => parse_pascal_call(&args, remaining, 'C', choose),
         _ => Err(format!("Unknown function '{}'", ident)),
     }
+}
+
+fn parse_pascal_call<'a>(
+    args: &Vec<Polynomial>,
+    remaining: &'a str,
+    fn_name: char,
+    f: impl FnOnce(Polynomial, usize) -> Polynomial,
+) -> ParseResult<'a, Polynomial> {
+    if args.len() != 2 {
+        return Err(format!(
+            "Function {} takes 2 arguments, got {}",
+            fn_name,
+            args.len()
+        ));
+    }
+    let poly_arg = args[0].clone();
+    let k_arg = &args[1];
+    let pos = LazyCell::new(|| format!("Second argument to {}", fn_name));
+    let k = poly_to_usize(k_arg, pos)?;
+    Ok((f(poly_arg, k), remaining))
 }
 
 fn parse_args(input: &str) -> ParseResult<Vec<Polynomial>> {

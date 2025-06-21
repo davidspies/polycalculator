@@ -1,6 +1,6 @@
 use std::borrow::Cow;
-use std::fmt;
-use std::ops::{Add, DivAssign, Mul, MulAssign, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::{fmt, mem};
 
 use num_rational::BigRational;
 use num_traits::{One, Zero};
@@ -8,7 +8,7 @@ use num_traits::{One, Zero};
 use crate::format::format_from_coeffs;
 
 // --- Polynomial Struct and Operations ---
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub(crate) struct Polynomial(Vec<BigRational>);
 
 impl Polynomial {
@@ -31,21 +31,17 @@ impl Polynomial {
         result
     }
 
-    pub(crate) fn pow(self, exp: u32) -> Self {
-        if exp == 0 {
-            return Polynomial::constant(BigRational::one());
-        }
+    pub(crate) fn pow(self, mut n: usize) -> Self {
         let mut base = self;
         let mut acc = Polynomial::constant(BigRational::one());
-        let mut n = exp;
-        while n > 1 {
+        while n >= 1 {
             if n % 2 == 1 {
                 acc *= base.clone();
             }
             base *= base.clone();
             n /= 2;
         }
-        acc * base
+        acc
     }
 
     pub(crate) fn is_zero(&self) -> bool {
@@ -78,6 +74,16 @@ pub(crate) fn x() -> Polynomial {
 }
 
 // --- Operator Overloading ---
+impl Neg for Polynomial {
+    type Output = Self;
+    fn neg(mut self) -> Self {
+        for coeff in &mut self.0 {
+            *coeff = -mem::take(coeff);
+        }
+        self
+    }
+}
+
 impl Add for Polynomial {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
@@ -95,20 +101,60 @@ impl Add for Polynomial {
     }
 }
 
+impl AddAssign for Polynomial {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = mem::take(self) + rhs;
+    }
+}
+
+impl AddAssign<BigRational> for Polynomial {
+    fn add_assign(&mut self, rhs: BigRational) {
+        if self.0.is_empty() {
+            self.0.push(rhs);
+        } else {
+            self.0[0] += rhs;
+        }
+        self.trim();
+    }
+}
+
+impl Add<BigRational> for Polynomial {
+    type Output = Self;
+    fn add(mut self, rhs: BigRational) -> Self {
+        self += rhs;
+        self
+    }
+}
+
 impl Sub for Polynomial {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        let max_len = self.0.len().max(rhs.0.len());
-        let mut result_coeffs = vec![BigRational::zero(); max_len];
-        for (i, c) in self.0.iter().enumerate() {
-            result_coeffs[i] += c;
+        self + (-rhs)
+    }
+}
+
+impl SubAssign for Polynomial {
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = mem::take(self) - rhs;
+    }
+}
+
+impl SubAssign<BigRational> for Polynomial {
+    fn sub_assign(&mut self, rhs: BigRational) {
+        if self.0.is_empty() {
+            self.0.push(-rhs);
+        } else {
+            self.0[0] -= rhs;
         }
-        for (i, c) in rhs.0.iter().enumerate() {
-            result_coeffs[i] -= c;
-        }
-        let mut result = Polynomial(result_coeffs);
-        result.trim();
-        result
+        self.trim();
+    }
+}
+
+impl Sub<BigRational> for Polynomial {
+    type Output = Self;
+    fn sub(mut self, rhs: BigRational) -> Self {
+        self -= rhs;
+        self
     }
 }
 
@@ -137,19 +183,35 @@ impl MulAssign for Polynomial {
     }
 }
 
-impl MulAssign<&BigRational> for Polynomial {
-    fn mul_assign(&mut self, rhs: &BigRational) {
+impl<'a> MulAssign<&'a BigRational> for Polynomial {
+    fn mul_assign(&mut self, rhs: &'a BigRational) {
         for coeff in &mut self.0 {
             *coeff *= rhs;
         }
     }
 }
 
-impl DivAssign<&BigRational> for Polynomial {
-    fn div_assign(&mut self, rhs: &BigRational) {
+impl<'a> Mul<&'a BigRational> for Polynomial {
+    type Output = Self;
+    fn mul(mut self, rhs: &'a BigRational) -> Self {
+        self *= rhs;
+        self
+    }
+}
+
+impl<'a> DivAssign<&'a BigRational> for Polynomial {
+    fn div_assign(&mut self, rhs: &'a BigRational) {
         for coeff in &mut self.0 {
             *coeff /= rhs;
         }
+    }
+}
+
+impl<'a> Div<&'a BigRational> for Polynomial {
+    type Output = Self;
+    fn div(mut self, rhs: &BigRational) -> Self {
+        self /= rhs;
+        self
     }
 }
 
