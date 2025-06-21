@@ -5,10 +5,7 @@ use num_traits::{ToPrimitive, Zero};
 
 use crate::polynomial::Polynomial;
 
-pub(super) fn poly_to_usize<'a>(
-    poly: &Polynomial,
-    pos: impl ResolvesToStr,
-) -> Result<usize, String> {
+pub(super) fn poly_to_usize(poly: &Polynomial, pos: impl ResolvesToStr) -> Result<usize, String> {
     let Some(n_rational) = poly.extract_constant() else {
         return Err(format!("{} must be a constant, got {}", pos.to_str(), poly));
     };

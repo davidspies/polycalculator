@@ -139,9 +139,9 @@ fn parse_primary(input: &mut Stream) -> Result<Polynomial> {
 }
 
 fn parse_function_call(
-    args: &Vec<Polynomial>,
+    args: &[Polynomial],
     fn_name: char,
-    f: impl FnOnce(Polynomial, usize) -> Polynomial,
+    f: impl FnOnce(&Polynomial, usize) -> Polynomial,
 ) -> Result<Polynomial> {
     if args.len() != 2 {
         return Err(format!(
@@ -150,7 +150,7 @@ fn parse_function_call(
             args.len()
         ));
     }
-    let poly_arg = args[0].clone();
+    let poly_arg = &args[0];
     let k_arg = &args[1];
     let pos = LazyCell::new(|| format!("Second argument to {}", fn_name));
     let k = poly_to_usize(k_arg, pos)?;

@@ -41,10 +41,7 @@ pub(crate) fn format_from_coeffs(
             _ => format_term(i),
         };
 
-        // Don't show "*C(x,k)" if coefficient is 1
-        let term = if i == 0 {
-            format!("{}{}", sign, var_str)
-        } else if abs_coeff.is_one() {
+        let term = if i == 0 || abs_coeff.is_one() {
             format!("{}{}", sign, var_str)
         } else {
             format!("{}{}{}", sign, coeff_str, var_str)

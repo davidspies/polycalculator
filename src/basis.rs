@@ -23,13 +23,8 @@ impl Polynomial {
         for n in (0..=degree).rev() {
             let c_n = residual.coeff_at(n);
             if !c_n.is_zero() {
-                let n_factorial = factorial(n);
-                binomial_coeffs[n] = c_n.clone() * n_factorial;
-
-                let mut term_to_subtract = pick(x(), n);
-                term_to_subtract *= &c_n;
-
-                residual = residual - term_to_subtract;
+                binomial_coeffs[n] = &c_n * factorial(n);
+                residual -= pick(&x(), n) * &c_n;
             }
         }
         binomial_coeffs

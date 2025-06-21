@@ -1,6 +1,7 @@
 use std::borrow::Cow;
+use std::fmt;
+use std::mem;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use std::{fmt, mem};
 
 use num_rational::BigRational;
 use num_traits::{One, Zero};
@@ -207,7 +208,7 @@ impl<'a> DivAssign<&'a BigRational> for Polynomial {
     }
 }
 
-impl<'a> Div<&'a BigRational> for Polynomial {
+impl Div<&BigRational> for Polynomial {
     type Output = Self;
     fn div(mut self, rhs: &BigRational) -> Self {
         self /= rhs;
@@ -215,7 +216,6 @@ impl<'a> Div<&'a BigRational> for Polynomial {
     }
 }
 
-// --- Display Formatting ---
 impl fmt::Display for Polynomial {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         format_from_coeffs(self.coeffs(), |degree| format!("x^{}", degree)).fmt(f)

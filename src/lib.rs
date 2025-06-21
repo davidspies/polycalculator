@@ -38,11 +38,7 @@ struct AppState {
     highlighted_cells: HashSet<(usize, usize)>,
 }
 
-fn update_history_display(
-    history: &Vec<HistoryEntry>,
-    history_list_element: &Element,
-    basis: Basis,
-) {
+fn update_history_display(history: &[HistoryEntry], history_list_element: &Element, basis: Basis) {
     let document = web_sys::window().unwrap().document().unwrap();
     history_list_element.set_inner_html("");
 
