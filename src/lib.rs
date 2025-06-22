@@ -1,15 +1,10 @@
 use std::cell::RefCell;
-use std::collections::HashSet;
 use std::rc::Rc;
 
-use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::Zero;
 use wasm_bindgen::{prelude::*, JsCast};
-use web_sys::{
-    Element, Event, HtmlElement, HtmlInputElement, HtmlSelectElement, HtmlTextAreaElement,
-    KeyboardEvent,
-};
+use web_sys::{Element, HtmlInputElement, HtmlSelectElement, HtmlTextAreaElement, KeyboardEvent};
 
 mod basis;
 mod format;
@@ -19,7 +14,6 @@ mod polynomial;
 
 use crate::basis::Basis;
 use crate::parse::parse;
-use crate::pascal::generate_pascal_triangle;
 use crate::polynomial::Polynomial;
 
 struct HistoryEntry {
@@ -32,10 +26,6 @@ struct AppState {
     history: Vec<HistoryEntry>,
     current_poly: Option<Polynomial>,
     basis: Basis,
-    // Pascal's Triangle State
-    pascal_rows: usize,
-    pascal_triangle: Vec<Vec<BigInt>>,
-    highlighted_cells: HashSet<(usize, usize)>,
 }
 
 fn update_history_display(history: &[HistoryEntry], history_list_element: &Element, basis: Basis) {
@@ -128,36 +118,6 @@ fn perform_evaluation(eval_input: &HtmlInputElement, eval_result: &Element, app_
     }
 }
 
-fn render_pascal_triangle(state: &AppState, container: &Element) {
-    let document = web_sys::window().unwrap().document().unwrap();
-    container.set_inner_html("");
-    for (r, row) in state.pascal_triangle.iter().enumerate() {
-        let row_div = document.create_element("div").unwrap();
-        row_div.set_class_name("pascal-row");
-        for (c, cell_val) in row.iter().enumerate() {
-            let cell_div = document.create_element("div").unwrap();
-            cell_div.set_class_name("pascal-cell");
-            if state.highlighted_cells.contains(&(r, c)) {
-                cell_div.class_list().add_1("highlighted").unwrap();
-            }
-            cell_div.set_attribute("data-row", &r.to_string()).unwrap();
-            cell_div.set_attribute("data-col", &c.to_string()).unwrap();
-            cell_div.set_text_content(Some(&cell_val.to_string()));
-            row_div.append_child(&cell_div).unwrap();
-        }
-        container.append_child(&row_div).unwrap();
-    }
-}
-
-fn update_pascal_sum(state: &AppState, sum_display: &Element) {
-    let sum: BigInt = state
-        .highlighted_cells
-        .iter()
-        .filter_map(|(r, c)| state.pascal_triangle.get(*r).and_then(|row| row.get(*c)))
-        .sum();
-    sum_display.set_text_content(Some(&sum.to_string()));
-}
-
 // --- Main App Logic ---
 #[wasm_bindgen(start)]
 pub fn start() {
@@ -191,62 +151,8 @@ pub fn start() {
         history: Vec::new(),
         current_poly: None,
         basis: Basis::Standard,
-        pascal_rows: 7,
-        pascal_triangle: generate_pascal_triangle(7),
-        highlighted_cells: HashSet::new(),
     }));
 
-    // --- Tab Switching Logic ---
-    let tab_nav = document.query_selector(".tab-nav").unwrap().unwrap();
-    let document_clone = document.clone();
-    let on_tab_click = Closure::<dyn FnMut(_)>::new(move |event: Event| {
-        let target = event.target().unwrap().dyn_into::<HtmlElement>().unwrap();
-        if !target.class_list().contains("tab-button") {
-            return;
-        }
-
-        let tab_id = target.id().replace("-btn", "");
-
-        // Update button active state
-        let nav = target.parent_element().unwrap();
-        for i in 0..nav.children().length() {
-            let child = nav.children().item(i).unwrap();
-            child.class_list().remove_1("active").unwrap();
-        }
-        target.class_list().add_1("active").unwrap();
-
-        // Update content active state
-        let content_parent = document_clone
-            .query_selector(".app-container")
-            .unwrap()
-            .unwrap();
-        for i in 0..content_parent.children().length() {
-            if let Some(child) = content_parent.children().item(i) {
-                if child.class_list().contains("tab-content") {
-                    child
-                        .dyn_into::<HtmlElement>()
-                        .unwrap()
-                        .style()
-                        .set_property("display", "none")
-                        .unwrap();
-                }
-            }
-        }
-        document_clone
-            .get_element_by_id(&tab_id)
-            .unwrap()
-            .dyn_into::<HtmlElement>()
-            .unwrap()
-            .style()
-            .set_property("display", "block")
-            .unwrap();
-    });
-    tab_nav
-        .add_event_listener_with_callback("click", on_tab_click.as_ref().unchecked_ref())
-        .unwrap();
-    on_tab_click.forget();
-
-    // --- Calculator Tab Logic ---
     // Basis Selector handler
     {
         let state_clone = Rc::clone(&app_state);
@@ -348,62 +254,4 @@ pub fn start() {
             .unwrap();
         on_keydown.forget();
     }
-
-    // --- Pascal's Triangle Tab Logic ---
-    let pascal_container = document
-        .get_element_by_id("pascal-triangle-container")
-        .unwrap();
-    let sum_display = document.get_element_by_id("highlight-sum-display").unwrap();
-    let rows_input = document
-        .get_element_by_id("pascal-rows-input")
-        .unwrap()
-        .dyn_into::<HtmlInputElement>()
-        .unwrap();
-
-    // Initial render
-    render_pascal_triangle(&app_state.borrow(), &pascal_container);
-
-    let on_rows_change = {
-        let state_clone = Rc::clone(&app_state);
-        let container_clone = pascal_container.clone();
-        let sum_display_clone = sum_display.clone();
-        let rows_input_clone = rows_input.clone();
-        Closure::<dyn FnMut()>::new(move || {
-            let mut state = state_clone.borrow_mut();
-            let new_rows = rows_input_clone.value().parse().unwrap_or(7);
-            state.pascal_rows = new_rows;
-            state.pascal_triangle = generate_pascal_triangle(new_rows);
-            state.highlighted_cells.clear();
-            render_pascal_triangle(&state, &container_clone);
-            update_pascal_sum(&state, &sum_display_clone);
-        })
-    };
-    rows_input
-        .add_event_listener_with_callback("change", on_rows_change.as_ref().unchecked_ref())
-        .unwrap();
-    on_rows_change.forget();
-
-    let on_cell_click = {
-        let state_clone = Rc::clone(&app_state);
-        let container_clone = pascal_container.clone();
-        let sum_display_clone = sum_display.clone();
-        Closure::<dyn FnMut(_)>::new(move |event: Event| {
-            let target = event.target().unwrap().dyn_into::<HtmlElement>().unwrap();
-            let row: usize = target.dataset().get("row").unwrap().parse().unwrap();
-            let col: usize = target.dataset().get("col").unwrap().parse().unwrap();
-
-            let mut state = state_clone.borrow_mut();
-            if state.highlighted_cells.contains(&(row, col)) {
-                state.highlighted_cells.remove(&(row, col));
-            } else {
-                state.highlighted_cells.insert((row, col));
-            }
-            render_pascal_triangle(&state, &container_clone);
-            update_pascal_sum(&state, &sum_display_clone);
-        })
-    };
-    pascal_container
-        .add_event_listener_with_callback("click", on_cell_click.as_ref().unchecked_ref())
-        .unwrap();
-    on_cell_click.forget();
 }

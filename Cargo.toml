@@ -24,7 +24,6 @@ features = [
     'DomTokenList',
     'Element',
     'HtmlCollection',
-    'HtmlElement',
     'HtmlInputElement',
     'HtmlSelectElement',
     'HtmlTextAreaElement',

@@ -21,20 +21,3 @@ pub(crate) fn pick(poly: &Polynomial, k: usize) -> Polynomial {
 pub(crate) fn choose(poly: &Polynomial, k: usize) -> Polynomial {
     pick(poly, k) / &BigRational::from(factorial(k))
 }
-
-pub(crate) fn generate_pascal_triangle(rows: usize) -> Vec<Vec<BigInt>> {
-    if rows == 0 {
-        return vec![];
-    }
-    let mut triangle = vec![vec![BigInt::one()]];
-    for i in 1..rows {
-        let prev_row = &triangle[i - 1];
-        let mut new_row = vec![BigInt::one()];
-        for j in 0..prev_row.len() - 1 {
-            new_row.push(&prev_row[j] + &prev_row[j + 1]);
-        }
-        new_row.push(BigInt::one());
-        triangle.push(new_row);
-    }
-    triangle
-}
