@@ -150,11 +150,8 @@ fn parse_function_call(
             args.len()
         ));
     }
-    let poly_arg = &args[0];
-    let k_arg = &args[1];
     let pos = LazyCell::new(|| format!("Second argument to {}", fn_name));
-    let k = poly_to_usize(k_arg, pos)?;
-    Ok(f(poly_arg, k))
+    Ok(f(&args[0], poly_to_usize(&args[1], pos)?))
 }
 
 fn parse_args(input: &mut Stream) -> Result<Vec<Polynomial>> {

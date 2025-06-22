@@ -12,8 +12,7 @@ pub(crate) fn factorial(n: usize) -> BigInt {
 pub(crate) fn pick(poly: &Polynomial, k: usize) -> Polynomial {
     let mut result = Polynomial::constant(BigRational::one());
     for i in 0..k {
-        let big_i = BigRational::from_integer(i.into());
-        result *= poly.clone() - big_i;
+        result *= poly.clone() - BigRational::from_integer(i.into());
     }
     result
 }
