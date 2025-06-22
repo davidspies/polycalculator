@@ -8,8 +8,8 @@
     <base href="/polycalculator/" />
     
 <script type="module">
-import init, * as bindings from '/polycalculator/polycalculator-a7d4ec54f02f1a74.js';
-const wasm = await init({ module_or_path: '/polycalculator/polycalculator-a7d4ec54f02f1a74_bg.wasm' });
+import init, * as bindings from '/polycalculator/polycalculator-e174b248904a88ec.js';
+const wasm = await init({ module_or_path: '/polycalculator/polycalculator-e174b248904a88ec_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -41,45 +41,6 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
         .app-container {
             max-width: 1400px;
             margin: 0 auto;
-        }
-
-        .tab-nav {
-            display: flex;
-            border-bottom: 2px solid var(--interactive-bg);
-            margin-bottom: 1.5rem;
-        }
-
-        .tab-button {
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            background-color: transparent;
-            border: none;
-            color: var(--text-color);
-            font-size: 1.1rem;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .tab-button:hover {
-            background-color: var(--interactive-bg);
-        }
-
-        .tab-button.active {
-            color: var(--header-color);
-            border-bottom-color: var(--accent-color);
-            font-weight: bold;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Common styles for containers inside tabs */
-        .tool-container {
             display: flex;
             flex-wrap: wrap;
             gap: 2rem;
@@ -222,103 +183,34 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             font-size: 1.1rem;
             font-weight: bold;
         }
-
-        /* Pascal's Triangle Styles */
-        #pascal-triangle-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: monospace;
-            line-height: 1.8;
-            overflow-x: auto;
-            padding: 1rem;
-        }
-
-        .pascal-row {
-            display: flex;
-            justify-content: center;
-        }
-
-        .pascal-cell {
-            padding: 0 0.75em;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: background-color 0.2s, color 0.2s;
-        }
-
-        .pascal-cell:hover {
-            background-color: var(--interactive-bg);
-        }
-
-        .pascal-cell.highlighted {
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-            font-weight: bold;
-        }
-
-        #highlight-sum-display {
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 1rem;
-        }
     </style>
-<link rel="modulepreload" href="/polycalculator/polycalculator-a7d4ec54f02f1a74.js" crossorigin="anonymous" integrity="sha384-l4q8ro86gKswG/iXfdfefrMr88qJ8HhCw7927bBeZEzOQZHtkqwBCwDIex/ATZEk"><link rel="preload" href="/polycalculator/polycalculator-a7d4ec54f02f1a74_bg.wasm" crossorigin="anonymous" integrity="sha384-esQ4FZfT6bV1TxfPz6QVdLM5p/O86EPdJDQa2JyIQkcxgdIYKUSjT7mopz3jueTf" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="/polycalculator/polycalculator-e174b248904a88ec.js" crossorigin="anonymous" integrity="sha384-O+Frm++Yfj/s1K8fG++8w0epLE37aGksBr57HcIjXl/I6YNxjikmWyV/wv9+V5oT"><link rel="preload" href="/polycalculator/polycalculator-e174b248904a88ec_bg.wasm" crossorigin="anonymous" integrity="sha384-O11aq9IEy5zkDjOBf1jeWP/SLeeiu1wMeGoRzFuaOASFiDnthgBh9xr8zMaDIMH+" as="fetch" type="application/wasm"></head>
 
 <body>
     <div class="app-container">
-        <nav class="tab-nav">
-            <button id="calculator-tab-btn" class="tab-button active">Polynomial Calculator</button>
-            <button id="pascal-tab-btn" class="tab-button">Pascal's Triangle</button>
-        </nav>
-
-        <!-- Tab 1: Polynomial Calculator -->
-        <div id="calculator-tab" class="tab-content active">
-            <div class="tool-container">
-                <div class="main-panel">
-                    <h1>Polynomial Calculator</h1>
-                    <textarea id="expression-input" placeholder="Enter a polynomial, e.g., C(x, 2) + 5!"></textarea>
-                    <button id="calculate-button">Calculate (Ctrl+Enter)</button>
-                    <h2>Result:</h2>
-                    <div id="result-output">0</div>
-                    <div class="basis-selector-section">
-                        <label for="basis-selector">Output Basis:</label>
-                        <select id="basis-selector">
-                            <option value="standard" selected>Standard (x^k)</option>
-                            <option value="binomial">Binomial C(x,k)</option>
-                        </select>
-                    </div>
-                    <div class="evaluation-section">
-                        <h2>Evaluate at x =</h2>
-                        <input type="text" id="eval-input" placeholder="e.g., 5 or 3/4" />
-                        <button id="eval-button">Evaluate</button>
-                        <div id="eval-result"></div>
-                    </div>
-                </div>
-                <div class="side-panel">
-                    <h2>History</h2>
-                    <div id="history-list"></div>
-                </div>
+        <div class="main-panel">
+            <h1>Polynomial Calculator</h1>
+            <textarea id="expression-input" placeholder="Enter a polynomial, e.g., C(x, 2) + 5!"></textarea>
+            <button id="calculate-button">Calculate (Ctrl+Enter)</button>
+            <h2>Result:</h2>
+            <div id="result-output">0</div>
+            <div class="basis-selector-section">
+                <label for="basis-selector">Output Basis:</label>
+                <select id="basis-selector">
+                    <option value="standard" selected>Standard (x^k)</option>
+                    <option value="binomial">Binomial C(x,k)</option>
+                </select>
+            </div>
+            <div class="evaluation-section">
+                <h2>Evaluate at x =</h2>
+                <input type="text" id="eval-input" placeholder="e.g., 5 or 3/4" />
+                <button id="eval-button">Evaluate</button>
+                <div id="eval-result"></div>
             </div>
         </div>
-
-        <!-- Tab 2: Pascal's Triangle Explorer -->
-        <div id="pascal-tab" class="tab-content">
-            <div class="tool-container">
-                <div class="main-panel">
-                    <h1>Pascal's Triangle</h1>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                        <label for="pascal-rows-input">Number of Rows:</label>
-                        <input type="number" id="pascal-rows-input" min="1" max="30" value="7"
-                            style="width: 80px; padding: 0.5rem; background-color: var(--bg-color); border: 1px solid var(--interactive-bg); color: var(--text-color);" />
-                    </div>
-                    <div id="pascal-triangle-container"></div>
-                </div>
-                <div class="side-panel">
-                    <h2>Sum of Highlighted</h2>
-                    <div id="highlight-sum-display">0</div>
-                </div>
-            </div>
+        <div class="side-panel">
+            <h2>History</h2>
+            <div id="history-list"></div>
         </div>
     </div>
 </body>
